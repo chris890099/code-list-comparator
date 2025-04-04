@@ -1,69 +1,74 @@
 import streamlit as st
 import pandas as pd
 import fitz  # PyMuPDF
+from PIL import Image
 
-# --- Page Config ---
+# --- Page setup ---
 st.set_page_config(
     page_title="Code List Comparator | Seamaster",
     page_icon="🌊",
     layout="wide"
 )
 
-# --- Custom CSS Styling ---
+# --- Custom Seamaster Branding + UI ---
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
 
         html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Open Sans', sans-serif;
         }
 
         .stApp {
-            background: linear-gradient(to right, #eef5fb, #f9fbfd);
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+            background: linear-gradient(145deg, #e6f0fa, #f0f6ff);
+            background-attachment: fixed;
         }
 
         .block-container {
-            padding: 2rem 3rem;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.06);
-            background-color: #ffffff;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            padding-left: 4rem;
+            padding-right: 4rem;
         }
 
-        h1, h2, h3, h4 {
+        h1, h2, h3 {
             color: #003366;
-        }
-
-        .stFileUploader {
-            border: 2px dashed #00509e;
-            border-radius: 12px;
-            padding: 1rem;
-            background-color: #f0f6ff;
         }
 
         .stButton>button {
             background-color: #00509e;
             color: white;
+            border-radius: 8px;
+            padding: 0.5em 1em;
             font-weight: bold;
-            border-radius: 10px;
-            padding: 0.6rem 1.5rem;
         }
 
         .stButton>button:hover {
             background-color: #003f7f;
+        }
+
+        [data-testid="stDeploymentStatus"] {
+            display: none !important;
+        }
+
+        footer, header, #MainMenu {
+            visibility: hidden;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- App Title ---
-st.title("🔍 Seamaster Code List Comparator")
-st.write("Upload two files (CSV, XLS, XLSX, TXT, PDF) to compare and find matching and non-matching codes.")
+# --- Logo ---
+logo = Image.open("sm logo.png")
+st.image(logo, width=300)
 
-# --- PDF Extraction ---
+# --- App Title ---
+st.markdown("## Seamaster Maritime & Logistics — Code List Comparator")
+st.markdown("Upload **Seamaster Records** and **Transporter Records** (CSV, XLSX, TXT, PDF) to compare and highlight matches & differences.")
+
+# --- PDF extractor ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -71,7 +76,7 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
     return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
-# --- Load Any File ---
+# --- File loader ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -82,12 +87,11 @@ def load_file(uploaded_file):
     else:
         return pd.read_excel(uploaded_file)
 
-# --- Upload Section ---
-st.markdown("### 📂 Upload Files")
-file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
+# --- Uploaders ---
+file1 = st.file_uploader("📁 Upload Seamaster Records", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("📁 Upload Transporter Records", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison ---
+# --- Comparison Logic ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
@@ -102,22 +106,22 @@ if file1 and file2:
         only_in_1 = sorted(set1 - set2)
         only_in_2 = sorted(set2 - set1)
 
-        st.markdown("### 📊 Summary")
-        st.success(f"✅ **Total Matches:** {len(matches)}")
-        st.error(f"❌ **Only in File 1:** {len(only_in_1)}")
-        st.error(f"❌ **Only in File 2:** {len(only_in_2)}")
+        st.subheader("📊 Summary")
+        st.markdown(f"✅ **Total Matches:** {len(matches)}")
+        st.markdown(f"❌ **In Seamaster Records only:** {len(only_in_1)}")
+        st.markdown(f"❌ **In Transporter Records only:** {len(only_in_2)}")
 
-        with st.expander("✅ Matching Codes"):
+        with st.expander("✅ View Matching Codes"):
             st.write(matches)
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("❌ In File 1 Only")
+            st.subheader("❌ In Seamaster Records only")
             st.write(only_in_1 if only_in_1 else "✅ No differences")
 
         with col2:
-            st.subheader("❌ In File 2 Only")
+            st.subheader("❌ In Transporter Records only")
             st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
