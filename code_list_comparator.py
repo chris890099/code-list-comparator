@@ -1,55 +1,42 @@
 import streamlit as st
 import pandas as pd
-import fitz  # PyMuPDF
-from io import StringIO
+import fitz  # PyMuPDF for PDF support
 
-# --- PAGE SETTINGS ---
-st.set_page_config(
-    page_title="Seamaster Code Comparator",
-    page_icon="🔎",
-    layout="centered"
-)
+# --- Branding & Config ---
+st.set_page_config(page_title="Seamaster — Code Comparator", layout="centered", initial_sidebar_state="collapsed")
 
-# --- CUSTOM BACKGROUND & LOGO ---
-st.markdown(
-    """
+# --- Custom CSS ---
+st.markdown("""
     <style>
-    body {
-        background-color: #f0f7ff;
-        background-image: linear-gradient(to right, #d0e6ff, #f0f7ff);
-    }
-    .stApp {
-        padding-top: 30px;
-    }
-    header, footer, .viewerBadge_container__1QSob, .stDeployButton {
-        visibility: hidden;
-    }
-    #MainMenu {visibility: hidden;}
-    .block-container {
-        padding-top: 1rem;
-    }
+        body {
+            background-color: #e6f0ff;
+        }
+        header, footer, .stDeployButton {
+            visibility: hidden;
+        }
+        .stApp {
+            padding-top: 40px;
+        }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# --- LOGO AND TITLE ---
+# --- Logo ---
 st.image("logomark.png", width=120)
-st.markdown(
-    "<h1 style='color:#003366;'>Seamaster Maritime & Logistics — Code List Comparator</h1>",
-    unsafe_allow_html=True
-)
-st.markdown("Upload any two files (CSV, XLS, XLSX, TXT, PDF) to detect matching and non-matching codes.")
 
-# --- FUNCTION TO EXTRACT TEXT FROM PDF ---
+# --- Title ---
+st.title("Seamaster Maritime & Logistics — Code List Comparator")
+st.markdown("Upload any two files (**CSV**, **XLS**, **XLSX**, **TXT**, or **PDF**) to detect matching and non-matching codes.")
+
+# --- PDF Reader ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
         for page in doc:
             text += page.get_text()
-    return pd.DataFrame([line.strip() for line in text.splitlines() if line.strip()], columns=["Code"])
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return pd.DataFrame(lines, columns=["Code"])
 
-# --- LOAD FILES ---
+# --- Load File Based on Type ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -60,36 +47,42 @@ def load_file(uploaded_file):
     else:
         return pd.read_excel(uploaded_file)
 
-# --- FILE UPLOADERS ---
-st.markdown("### 📂 Upload Code List 1")
-file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
+# --- Upload Files ---
+st.markdown("📁 **Upload Code List 1**")
+file1 = st.file_uploader("", type=["csv", "xls", "xlsx", "txt", "pdf"], key="file1")
 
-st.markdown("### 📂 Upload Code List 2")
-file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
+st.markdown("📁 **Upload Code List 2**")
+file2 = st.file_uploader("", type=["csv", "xls", "xlsx", "txt", "pdf"], key="file2")
 
-# --- PROCESS FILES ---
+# --- Compare Logic ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
         df2 = load_file(file2)
 
+        # Flatten both to strings
         list1 = df1.astype(str).stack().str.strip().unique()
         list2 = df2.astype(str).stack().str.strip().unique()
 
-        matches = sorted(set(list1).intersection(set(list2)))
-        missing_in_2 = sorted(set(list1) - set(list2))
-        missing_in_1 = sorted(set(list2) - set(list1))
+        # Comparison
+        matches = sorted(set(list1).intersection(list2))
+        only_in_1 = sorted(set(list1) - set(list2))
+        only_in_2 = sorted(set(list2) - set(list1))
 
-        st.markdown("## 🔍 Comparison Results")
+        st.subheader("🔍 Comparison Summary")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("✅ Matches", len(matches))
+        col2.metric("❌ In File 1 Only", len(only_in_1))
+        col3.metric("❌ In File 2 Only", len(only_in_2))
 
-        st.write(f"✅ Total Matches: **{len(matches)}**")
-        st.write(matches if matches else "No matches found.")
+        with st.expander("View Matching Codes"):
+            st.write(matches if matches else "No matches found.")
 
-        st.write(f"❌ Total Missing in Code List 2: **{len(missing_in_2)}**")
-        st.write(missing_in_2 if missing_in_2 else "✅ No differences.")
+        with st.expander("Codes in File 1 but not in File 2"):
+            st.write(only_in_1 if only_in_1 else "✅ No differences.")
 
-        st.write(f"❌ Total Missing in Code List 1: **{len(missing_in_1)}**")
-        st.write(missing_in_1 if missing_in_1 else "✅ No differences.")
+        with st.expander("Codes in File 2 but not in File 1"):
+            st.write(only_in_2 if only_in_2 else "✅ No differences.")
 
     except Exception as e:
-        st.error(f"Error processing files: {e}")
+        st.error(f"❗ Error processing files: {e}")
