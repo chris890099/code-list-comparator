@@ -1,73 +1,95 @@
 import streamlit as st
 import pandas as pd
-import io
+import fitz  # PyMuPDF
+from io import StringIO
 
-def process_file(uploaded_file):
-    try:
-        if uploaded_file.name.endswith('.csv'):
-            return pd.read_csv(uploaded_file, header=None)
-        elif uploaded_file.name.endswith(('.xls', '.xlsx')):
-            return pd.read_excel(uploaded_file, header=None)
-        elif uploaded_file.name.endswith('.txt'):
-            return pd.read_csv(uploaded_file, header=None, delimiter='\t')
-        else:
-            st.error("Unsupported file type. Please upload .csv, .xlsx, or .txt files.")
-            return None
-    except Exception as e:
-        st.error(f"Error processing file: {e}")
-        return None
+# --- PAGE SETTINGS ---
+st.set_page_config(
+    page_title="Seamaster Code Comparator",
+    page_icon="🔎",
+    layout="centered"
+)
 
-def compare_codes(df1, df2):
-    df1[0] = df1[0].astype(str).str.strip().str.upper()
-    df2[0] = df2[0].astype(str).str.strip().str.upper()
-
-    set1 = set(df1[0])
-    set2 = set(df2[0])
-
-    matches = set1.intersection(set2)
-    only_in_1 = set1 - set2
-    only_in_2 = set2 - set1
-
-    result = {
-        "Matches": list(matches),
-        "Only in List 1": list(only_in_1),
-        "Only in List 2": list(only_in_2)
+# --- CUSTOM BACKGROUND & LOGO ---
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #f0f7ff;
+        background-image: linear-gradient(to right, #d0e6ff, #f0f7ff);
     }
-    return result
+    .stApp {
+        padding-top: 30px;
+    }
+    header, footer, .viewerBadge_container__1QSob, .stDeployButton {
+        visibility: hidden;
+    }
+    #MainMenu {visibility: hidden;}
+    .block-container {
+        padding-top: 1rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-def generate_download(result):
-    output = io.StringIO()
-    for category, codes in result.items():
-        output.write(f"{category}\n")
-        for code in codes:
-            output.write(f"{code}\n")
-        output.write("\n")
-    return output.getvalue()
+# --- LOGO AND TITLE ---
+st.image("logomark.png", width=120)
+st.markdown(
+    "<h1 style='color:#003366;'>Seamaster Maritime & Logistics — Code List Comparator</h1>",
+    unsafe_allow_html=True
+)
+st.markdown("Upload any two files (CSV, XLS, XLSX, TXT, PDF) to detect matching and non-matching codes.")
 
-# UI starts here
-st.title("🔍 Compare Code Lists")
+# --- FUNCTION TO EXTRACT TEXT FROM PDF ---
+def extract_text_from_pdf(uploaded_file):
+    text = ""
+    with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
+        for page in doc:
+            text += page.get_text()
+    return pd.DataFrame([line.strip() for line in text.splitlines() if line.strip()], columns=["Code"])
 
-st.markdown("Upload two files containing 7-character codes (Excel, CSV, or TXT). Case-insensitive.")
+# --- LOAD FILES ---
+def load_file(uploaded_file):
+    if uploaded_file.name.endswith(".pdf"):
+        return extract_text_from_pdf(uploaded_file)
+    elif uploaded_file.name.endswith(".csv"):
+        return pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".txt"):
+        return pd.read_csv(uploaded_file, delimiter="\t", header=None)
+    else:
+        return pd.read_excel(uploaded_file)
 
-file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt"])
-file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt"])
+# --- FILE UPLOADERS ---
+st.markdown("### 📂 Upload Code List 1")
+file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
+st.markdown("### 📂 Upload Code List 2")
+file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
+
+# --- PROCESS FILES ---
 if file1 and file2:
-    df1 = process_file(file1)
-    df2 = process_file(file2)
+    try:
+        df1 = load_file(file1)
+        df2 = load_file(file2)
 
-    if df1 is not None and df2 is not None:
-        if st.button("Compare"):
-            with st.spinner("Comparing..."):
-                result = compare_codes(df1, df2)
+        list1 = df1.astype(str).stack().str.strip().unique()
+        list2 = df2.astype(str).stack().str.strip().unique()
 
-            st.success("Comparison complete!")
+        matches = sorted(set(list1).intersection(set(list2)))
+        missing_in_2 = sorted(set(list1) - set(list2))
+        missing_in_1 = sorted(set(list2) - set(list1))
 
-            for key in result:
-                st.subheader(key)
-                st.write(result[key])
+        st.markdown("## 🔍 Comparison Results")
 
-            # Download button
-            download_data = generate_download(result)
-            st.download_button("📥 Download Results", download_data, file_name="comparison_results.txt")
+        st.write(f"✅ Total Matches: **{len(matches)}**")
+        st.write(matches if matches else "No matches found.")
 
+        st.write(f"❌ Total Missing in Code List 2: **{len(missing_in_2)}**")
+        st.write(missing_in_2 if missing_in_2 else "✅ No differences.")
+
+        st.write(f"❌ Total Missing in Code List 1: **{len(missing_in_1)}**")
+        st.write(missing_in_1 if missing_in_1 else "✅ No differences.")
+
+    except Exception as e:
+        st.error(f"Error processing files: {e}")
