@@ -2,18 +2,68 @@ import streamlit as st
 import pandas as pd
 import fitz  # PyMuPDF
 
-# --- Page setup ---
+# --- Page Config ---
 st.set_page_config(
     page_title="Code List Comparator | Seamaster",
     page_icon="🌊",
     layout="wide"
 )
 
-# --- App Title ---
-st.title("Seamaster Maritime & Logistics — Code List Comparator")
-st.markdown("Upload any two files (CSV, XLS, XLSX, TXT, PDF) to detect matching and non-matching codes.")
+# --- Custom CSS Styling ---
+st.markdown(
+    """
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
-# --- PDF extractor ---
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .stApp {
+            background: linear-gradient(to right, #eef5fb, #f9fbfd);
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .block-container {
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.06);
+            background-color: #ffffff;
+        }
+
+        h1, h2, h3, h4 {
+            color: #003366;
+        }
+
+        .stFileUploader {
+            border: 2px dashed #00509e;
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: #f0f6ff;
+        }
+
+        .stButton>button {
+            background-color: #00509e;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+        }
+
+        .stButton>button:hover {
+            background-color: #003f7f;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- App Title ---
+st.title("🔍 Seamaster Code List Comparator")
+st.write("Upload two files (CSV, XLS, XLSX, TXT, PDF) to compare and find matching and non-matching codes.")
+
+# --- PDF Extraction ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -21,7 +71,7 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
     return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
-# --- File loader ---
+# --- Load Any File ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -32,11 +82,12 @@ def load_file(uploaded_file):
     else:
         return pd.read_excel(uploaded_file)
 
-# --- Uploaders ---
-file1 = st.file_uploader("📁 Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("📁 Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
+# --- Upload Section ---
+st.markdown("### 📂 Upload Files")
+file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison Logic ---
+# --- Comparison ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
@@ -51,22 +102,22 @@ if file1 and file2:
         only_in_1 = sorted(set1 - set2)
         only_in_2 = sorted(set2 - set1)
 
-        st.subheader("📊 Summary")
-        st.markdown(f"✅ **Total Matches:** {len(matches)}")
-        st.markdown(f"❌ **Codes in File 1 but not File 2:** {len(only_in_1)}")
-        st.markdown(f"❌ **Codes in File 2 but not File 1:** {len(only_in_2)}")
+        st.markdown("### 📊 Summary")
+        st.success(f"✅ **Total Matches:** {len(matches)}")
+        st.error(f"❌ **Only in File 1:** {len(only_in_1)}")
+        st.error(f"❌ **Only in File 2:** {len(only_in_2)}")
 
-        with st.expander("✅ View Matching Codes"):
+        with st.expander("✅ Matching Codes"):
             st.write(matches)
 
         col1, col2 = st.columns(2)
 
         with col1:
-            st.subheader("❌ In File 1 but not in File 2")
+            st.subheader("❌ In File 1 Only")
             st.write(only_in_1 if only_in_1 else "✅ No differences")
 
         with col2:
-            st.subheader("❌ In File 2 but not in File 1")
+            st.subheader("❌ In File 2 Only")
             st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
