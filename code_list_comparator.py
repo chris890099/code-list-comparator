@@ -1,42 +1,77 @@
 import streamlit as st
 import pandas as pd
-import fitz  # PyMuPDF for PDF support
+import fitz  # PyMuPDF
 
-# --- Branding & Config ---
-st.set_page_config(page_title="Seamaster — Code Comparator", layout="centered", initial_sidebar_state="collapsed")
+# --- Page setup ---
+st.set_page_config(
+    page_title="Code List Comparator | Seamaster",
+    page_icon="🌊",
+    layout="wide"
+)
 
-# --- Custom CSS ---
-st.markdown("""
+# --- Custom Seamaster Branding + Fancy Aesthetics ---
+st.markdown(
+    """
     <style>
-        body {
-            background-color: #e6f0ff;
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+
+        html, body, [class*="css"] {
+            font-family: 'Open Sans', sans-serif;
         }
-        header, footer, .stDeployButton {
+
+        .stApp {
+            background: linear-gradient(145deg, #e6f0fa, #f0f6ff);
+            background-attachment: fixed;
+        }
+
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            padding-left: 4rem;
+            padding-right: 4rem;
+        }
+
+        h1, h2, h3 {
+            color: #003366;
+        }
+
+        .stButton>button {
+            background-color: #00509e;
+            color: white;
+            border-radius: 8px;
+            padding: 0.5em 1em;
+            font-weight: bold;
+        }
+
+        .stButton>button:hover {
+            background-color: #003f7f;
+        }
+
+        [data-testid="stDeploymentStatus"] {
+            display: none !important;
+        }
+
+        footer, header, #MainMenu {
             visibility: hidden;
         }
-        .stApp {
-            padding-top: 40px;
-        }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# --- Logo ---
-st.image("logomark.png", width=120)
+# --- App Title ---
+st.markdown("## Seamaster Maritime & Logistics — Code List Comparator")
+st.markdown("Upload any two files (CSV, XLS, XLSX, TXT, PDF) to detect matching and non-matching codes.")
 
-# --- Title ---
-st.title("Seamaster Maritime & Logistics — Code List Comparator")
-st.markdown("Upload any two files (**CSV**, **XLS**, **XLSX**, **TXT**, or **PDF**) to detect matching and non-matching codes.")
-
-# --- PDF Reader ---
+# --- PDF extractor ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
         for page in doc:
             text += page.get_text()
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    return pd.DataFrame(lines, columns=["Code"])
+    return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
-# --- Load File Based on Type ---
+# --- File loader ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -47,42 +82,42 @@ def load_file(uploaded_file):
     else:
         return pd.read_excel(uploaded_file)
 
-# --- Upload Files ---
-st.markdown("📁 **Upload Code List 1**")
-file1 = st.file_uploader("", type=["csv", "xls", "xlsx", "txt", "pdf"], key="file1")
+# --- Uploaders ---
+file1 = st.file_uploader("📁 Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("📁 Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-st.markdown("📁 **Upload Code List 2**")
-file2 = st.file_uploader("", type=["csv", "xls", "xlsx", "txt", "pdf"], key="file2")
-
-# --- Compare Logic ---
+# --- Comparison Logic ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
         df2 = load_file(file2)
 
-        # Flatten both to strings
         list1 = df1.astype(str).stack().str.strip().unique()
         list2 = df2.astype(str).stack().str.strip().unique()
 
-        # Comparison
-        matches = sorted(set(list1).intersection(list2))
-        only_in_1 = sorted(set(list1) - set(list2))
-        only_in_2 = sorted(set(list2) - set(list1))
+        set1, set2 = set(list1), set(list2)
 
-        st.subheader("🔍 Comparison Summary")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("✅ Matches", len(matches))
-        col2.metric("❌ In File 1 Only", len(only_in_1))
-        col3.metric("❌ In File 2 Only", len(only_in_2))
+        matches = sorted(set1 & set2)
+        only_in_1 = sorted(set1 - set2)
+        only_in_2 = sorted(set2 - set1)
 
-        with st.expander("View Matching Codes"):
-            st.write(matches if matches else "No matches found.")
+        st.subheader("📊 Summary")
+        st.markdown(f"✅ **Total Matches:** {len(matches)}")
+        st.markdown(f"❌ **Codes in File 1 but not File 2:** {len(only_in_1)}")
+        st.markdown(f"❌ **Codes in File 2 but not File 1:** {len(only_in_2)}")
 
-        with st.expander("Codes in File 1 but not in File 2"):
-            st.write(only_in_1 if only_in_1 else "✅ No differences.")
+        with st.expander("✅ View Matching Codes"):
+            st.write(matches)
 
-        with st.expander("Codes in File 2 but not in File 1"):
-            st.write(only_in_2 if only_in_2 else "✅ No differences.")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("❌ In File 1 but not in File 2")
+            st.write(only_in_1 if only_in_1 else "✅ No differences")
+
+        with col2:
+            st.subheader("❌ In File 2 but not in File 1")
+            st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
-        st.error(f"❗ Error processing files: {e}")
+        st.error(f"🚨 Error processing files: {e}")
