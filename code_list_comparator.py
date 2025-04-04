@@ -9,58 +9,8 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Custom Seamaster Branding + Fancy Aesthetics ---
-st.markdown(
-    """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
-
-        html, body, [class*="css"] {
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        .stApp {
-            background: linear-gradient(145deg, #e6f0fa, #f0f6ff);
-            background-attachment: fixed;
-        }
-
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            padding-left: 4rem;
-            padding-right: 4rem;
-        }
-
-        h1, h2, h3 {
-            color: #003366;
-        }
-
-        .stButton>button {
-            background-color: #00509e;
-            color: white;
-            border-radius: 8px;
-            padding: 0.5em 1em;
-            font-weight: bold;
-        }
-
-        .stButton>button:hover {
-            background-color: #003f7f;
-        }
-
-        [data-testid="stDeploymentStatus"] {
-            display: none !important;
-        }
-
-        footer, header, #MainMenu {
-            visibility: hidden;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # --- App Title ---
-st.markdown("## Seamaster Maritime & Logistics — Code List Comparator")
+st.title("Seamaster Maritime & Logistics — Code List Comparator")
 st.markdown("Upload any two files (CSV, XLS, XLSX, TXT, PDF) to detect matching and non-matching codes.")
 
 # --- PDF extractor ---
