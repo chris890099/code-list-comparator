@@ -1,70 +1,69 @@
 import streamlit as st
 import pandas as pd
 import fitz  # PyMuPDF
-import base64
-from PIL import Image
-from io import BytesIO
 
-# --- Streamlit Config ---
+# --- Page Config ---
 st.set_page_config(
     page_title="Code List Comparator | Seamaster",
     page_icon="🌊",
     layout="wide"
 )
 
-# --- Custom Styles ---
+# --- Custom CSS Styling ---
 st.markdown(
-    f"""
+    """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
-        html, body, [class*="css"] {{
-            font-family: 'Open Sans', sans-serif;
-        }}
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
 
-        .stApp {{
-            background: linear-gradient(135deg, #f0f6ff, #e6f0fa);
-            background-attachment: fixed;
-        }}
+        .stApp {
+            background: linear-gradient(to right, #eef5fb, #f9fbfd);
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
 
-        .block-container {{
-            padding-top: 3rem;
-            padding-bottom: 3rem;
-            padding-left: 4rem;
-            padding-right: 4rem;
-        }}
+        .block-container {
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.06);
+            background-color: #ffffff;
+        }
 
-        .stButton>button {{
-            background-color: #004080;
-            color: white;
-            border-radius: 8px;
-            padding: 0.5em 1.5em;
-            font-weight: bold;
-        }}
-
-        .stButton>button:hover {{
-            background-color: #00264d;
-        }}
-
-        .stFileUploader label {{
-            font-weight: 600;
-            font-size: 1rem;
+        h1, h2, h3, h4 {
             color: #003366;
-        }}
+        }
 
-        [data-testid="stDeploymentStatus"] {{
-            display: none !important;
-        }}
+        .stFileUploader {
+            border: 2px dashed #00509e;
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: #f0f6ff;
+        }
+
+        .stButton>button {
+            background-color: #00509e;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+        }
+
+        .stButton>button:hover {
+            background-color: #003f7f;
+        }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # --- App Title ---
-st.markdown("## 🚢 Seamaster Code Comparison Tool")
-st.markdown("Upload **Seamaster records** and **Transporter records** to compare unique and overlapping codes.")
+st.title("🔍 Seamaster Code List Comparator")
+st.write("Upload two files (CSV, XLS, XLSX, TXT, PDF) to compare and find matching and non-matching codes.")
 
-# --- PDF Extractor ---
+# --- PDF Extraction ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -72,7 +71,7 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
     return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
-# --- File Loader ---
+# --- Load Any File ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -83,11 +82,12 @@ def load_file(uploaded_file):
     else:
         return pd.read_excel(uploaded_file)
 
-# --- Uploaders ---
-file1 = st.file_uploader("📁 Seamaster Records", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("📁 Transporter Records", type=["csv", "xls", "xlsx", "txt", "pdf"])
+# --- Upload Section ---
+st.markdown("### 📂 Upload Files")
+file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison Logic ---
+# --- Comparison ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
@@ -102,33 +102,23 @@ if file1 and file2:
         only_in_1 = sorted(set1 - set2)
         only_in_2 = sorted(set2 - set1)
 
-        st.markdown("---")
-        st.subheader("📊 Comparison Summary")
-        st.markdown(f"✅ **Matches:** {len(matches)}")
-        st.markdown(f"⚠️ **Only in Seamaster Records:** {len(only_in_1)}")
-        st.markdown(f"⚠️ **Only in Transporter Records:** {len(only_in_2)}")
+        st.markdown("### 📊 Summary")
+        st.success(f"✅ **Total Matches:** {len(matches)}")
+        st.error(f"❌ **Only in File 1:** {len(only_in_1)}")
+        st.error(f"❌ **Only in File 2:** {len(only_in_2)}")
 
-        with st.expander("✅ View Matching Codes"):
+        with st.expander("✅ Matching Codes"):
             st.write(matches)
 
         col1, col2 = st.columns(2)
+
         with col1:
-            st.subheader("🧾 Seamaster Only")
-            st.write(only_in_1 if only_in_1 else "✅ No unique codes")
+            st.subheader("❌ In File 1 Only")
+            st.write(only_in_1 if only_in_1 else "✅ No differences")
 
         with col2:
-            st.subheader("🧾 Transporter Only")
-            st.write(only_in_2 if only_in_2 else "✅ No unique codes")
+            st.subheader("❌ In File 2 Only")
+            st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
         st.error(f"🚨 Error processing files: {e}")
-else:
-    # --- Loading Placeholder with Animated Gradient Banner ---
-    img_placeholder = """
-    <div style="margin-top: 3rem; text-align: center;">
-        <img src="data:image/png;base64,{}" width="500" alt="Loading trucks and ships animation" style="border-radius: 16px; box-shadow: 0 0 12px rgba(0,0,0,0.15);"/>
-        <p style="color:#00509e;font-weight:500;margin-top:1rem;">Waiting for file upload...</p>
-    </div>
-    """.format(base64.b64encode(Image.new("RGB", (800, 200), color=(3, 78, 129)).tobytes()).decode('utf-8'))
-
-    st.markdown(img_placeholder, unsafe_allow_html=True)
