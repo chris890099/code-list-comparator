@@ -37,12 +37,27 @@ st.markdown(
             color: #ffffff !important;
         }
 
-        .stFileUploader, .stFileUploader > div, .stFileUploader > div > div {
-            background-color: #1e293b !important;
-            color: #ffffff !important;
-            border: 1px solid #60a5fa !important;
-            border-radius: 10px !important;
-            padding: 1rem;
+        .stFileUploader {
+    border: 2px dashed #60a5fa;
+    border-radius: 12px;
+    padding: 1rem;
+    background-color: transparent;
+}
+
+/* Fix for Chrome/Edge upload box */
+.stFileUploader > div > div {
+    background-color: #1e293b !important;
+    color: white !important;
+    border: 1px solid #60a5fa !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+input[type="file"] {
+    color: white !important;
+    background-color: #1e293b !important;
+}
+
         }
 
         .stFileUploader label {
