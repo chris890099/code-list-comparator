@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Dark Theme Styling ---
+# --- Unified Dark Mode CSS Fix ---
 st.markdown(
     """
     <style>
@@ -17,30 +17,31 @@ st.markdown(
 
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
-            color: #ffffff;
+            background-color: #0f172a !important;
+            color: #ffffff !important;
         }
 
         .stApp {
-            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364) !important;
             padding: 2rem;
         }
 
         .block-container {
             padding: 2rem 3rem;
             border-radius: 15px;
-            background-color: #1b2735;
+            background-color: #1e293b !important;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        h1, h2, h3, h4 {
-            color: #ffffff;
+        h1, h2, h3, h4, h5, h6, p, label, span {
+            color: #ffffff !important;
         }
 
-        .stFileUploader {
-            background-color: #111827 !important;
-            color: white !important;
-            border: 1px solid #60a5fa;
-            border-radius: 10px;
+        .stFileUploader, .stFileUploader > div, .stFileUploader > div > div {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 1px solid #60a5fa !important;
+            border-radius: 10px !important;
             padding: 1rem;
         }
 
@@ -48,23 +49,28 @@ st.markdown(
             color: #ffffff !important;
         }
 
+        .stFileUploader .css-1p05t8e, .stFileUploader .css-1n76uvr {
+            background-color: #111827 !important;
+            color: white !important;
+        }
+
         .stButton>button {
-            background-color: #3b82f6;
-            color: white;
+            background-color: #3b82f6 !important;
+            color: white !important;
             font-weight: bold;
             border-radius: 8px;
             padding: 0.5rem 1.2rem;
         }
 
         .stButton>button:hover {
-            background-color: #2563eb;
+            background-color: #2563eb !important;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# --- Title ---
+# --- App Title ---
 st.title("🔍 Seamaster Code List Comparator")
 st.write("Upload two files (CSV, XLS, XLSX, TXT, PDF) to compare and find matching and non-matching codes.")
 
@@ -89,7 +95,7 @@ def load_file(uploaded_file):
 
 # --- Upload Section ---
 st.markdown("### 📁 Upload Files")
-file1 = st.file_uploader("🗂️ Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file1 = st.file_uploader("📦 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 file2 = st.file_uploader("🚚 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
 # --- Comparison Logic ---
