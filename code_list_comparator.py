@@ -12,7 +12,6 @@ st.set_page_config(
 # --- Custom CSS Styling ---
 st.markdown(
     """
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
@@ -28,12 +27,11 @@ st.markdown(
         .block-container {
             padding: 2rem 3rem;
             border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
             background-color: #1e293b;
         }
 
-        h1, h2, h3, h4 {
-            color: #f8fafc;
+        h1, h2, h3, h4, .stMarkdown, .stTextInput > label, .stFileUploader > label, .st-expanderHeader {
+            color: #ffffff !important;
         }
 
         .stFileUploader {
@@ -45,13 +43,13 @@ st.markdown(
 
         .stFileUploader > div > div {
             background-color: #1e293b !important;
-            color: white !important;
+            color: #ffffff !important;
             border: 1px solid #60a5fa !important;
             border-radius: 12px !important;
         }
 
         section[data-testid="stFileUploader"] > label {
-            color: white !important;
+            color: #ffffff !important;
             font-weight: 600;
         }
 
@@ -74,8 +72,6 @@ st.markdown(
     </style>
     """,
     unsafe_allow_html=True
-
-
 )
 
 # --- App Title ---
@@ -102,9 +98,9 @@ def load_file(uploaded_file):
         return pd.read_excel(uploaded_file)
 
 # --- Upload Section ---
-st.markdown("### 📂 Upload Files")
-file1 = st.file_uploader("📦 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("🚛 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+st.markdown("### 📍 Upload Files")
+file1 = st.file_uploader("📁 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("🚚 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
 # --- Comparison ---
 if file1 and file2:
