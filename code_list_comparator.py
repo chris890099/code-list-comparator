@@ -9,50 +9,52 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Custom CSS Styling ---
+# --- Dark Mode Styling ---
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f0f2f6;
         }
 
         .stApp {
-            background: linear-gradient(to right, #eef5fb, #f9fbfd);
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+            background: linear-gradient(to right, #0b1120, #1f2937);
+            padding: 2rem;
         }
 
         .block-container {
+            background-color: #1f2937;
+            border-radius: 12px;
             padding: 2rem 3rem;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.06);
-            background-color: #ffffff;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
         }
 
         h1, h2, h3, h4 {
-            color: #003366;
+            color: #e2e8f0;
         }
 
         .stFileUploader {
-            border: 2px dashed #00509e;
-            border-radius: 12px;
+            background-color: #111827;
+            border: 2px dashed #3b82f6;
+            border-radius: 10px;
             padding: 1rem;
-            background-color: #f0f6ff;
+            color: #f0f2f6;
         }
 
         .stButton>button {
-            background-color: #00509e;
+            background-color: #3b82f6;
             color: white;
-            font-weight: bold;
             border-radius: 10px;
-            padding: 0.6rem 1.5rem;
+            padding: 0.6rem 1.4rem;
+            font-weight: bold;
         }
 
         .stButton>button:hover {
-            background-color: #003f7f;
+            background-color: #2563eb;
         }
     </style>
     """,
@@ -71,7 +73,7 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
     return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
-# --- Load Any File ---
+# --- Load File ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -84,10 +86,10 @@ def load_file(uploaded_file):
 
 # --- Upload Section ---
 st.markdown("### 📂 Upload Files")
-file1 = st.file_uploader("Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file1 = st.file_uploader("📘 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("🚛 Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison ---
+# --- Compare & Output ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
@@ -104,20 +106,18 @@ if file1 and file2:
 
         st.markdown("### 📊 Summary")
         st.success(f"✅ **Total Matches:** {len(matches)}")
-        st.error(f"❌ **Only in File 1:** {len(only_in_1)}")
-        st.error(f"❌ **Only in File 2:** {len(only_in_2)}")
+        st.error(f"❌ **Only in Seamaster Report:** {len(only_in_1)}")
+        st.error(f"❌ **Only in Transporter Report:** {len(only_in_2)}")
 
         with st.expander("✅ Matching Codes"):
             st.write(matches)
 
         col1, col2 = st.columns(2)
-
         with col1:
-            st.subheader("❌ In File 1 Only")
+            st.subheader("❌ In Seamaster Report Only")
             st.write(only_in_1 if only_in_1 else "✅ No differences")
-
         with col2:
-            st.subheader("❌ In File 2 Only")
+            st.subheader("❌ In Transporter Report Only")
             st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
