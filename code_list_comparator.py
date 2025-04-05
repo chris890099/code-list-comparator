@@ -35,6 +35,11 @@ st.markdown(
         h1, h2, h3, h4, .stMarkdown h1 {
             color: #ffffff;
         }
+        /* Fix label text color */
+            section[data-testid="stFileUploader"] > label {
+            color: white !important;
+            font-weight: 600;
+        }
 
         .stFileUploader {
             border: 2px dashed #60a5fa;
