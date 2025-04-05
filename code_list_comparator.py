@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Unified Dark Mode CSS Fix ---
+# --- Custom CSS Styling ---
 st.markdown(
     """
     <style>
@@ -17,68 +17,55 @@ st.markdown(
 
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a !important;
-            color: #ffffff !important;
         }
 
         .stApp {
-            background: linear-gradient(to right, #0f2027, #203a43, #2c5364) !important;
-            padding: 2rem;
+            background-color: #0f172a;
+            color: #ffffff;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
 
         .block-container {
             padding: 2rem 3rem;
             border-radius: 15px;
-            background-color: #1e293b !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background-color: #1e293b;
         }
 
-        h1, h2, h3, h4, h5, h6, p, label, span {
-            color: #ffffff !important;
+        h1, h2, h3, h4, .stMarkdown h1 {
+            color: #ffffff;
         }
 
         .stFileUploader {
-    border: 2px dashed #60a5fa;
-    border-radius: 12px;
-    padding: 1rem;
-    background-color: transparent;
-}
-
-/* Fix for Chrome/Edge upload box */
-.stFileUploader > div > div {
-    background-color: #1e293b !important;
-    color: white !important;
-    border: 1px solid #60a5fa !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-}
-
-input[type="file"] {
-    color: white !important;
-    background-color: #1e293b !important;
-}
-
+            border: 2px dashed #60a5fa;
+            border-radius: 12px;
+            padding: 1rem;
+            background-color: transparent;
         }
 
-        .stFileUploader label {
-            color: #ffffff !important;
-        }
-
-        .stFileUploader .css-1p05t8e, .stFileUploader .css-1n76uvr {
-            background-color: #111827 !important;
+        .stFileUploader > div > div {
+            background-color: #1e293b !important;
             color: white !important;
+            border: 1px solid #60a5fa !important;
+            border-radius: 12px !important;
+            box-shadow: none !important;
+        }
+
+        input[type="file"] {
+            color: black !important;
+            background-color: #1e293b !important;
         }
 
         .stButton>button {
-            background-color: #3b82f6 !important;
-            color: white !important;
+            background-color: #3b82f6;
+            color: white;
             font-weight: bold;
-            border-radius: 8px;
-            padding: 0.5rem 1.2rem;
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
         }
 
         .stButton>button:hover {
-            background-color: #2563eb !important;
+            background-color: #2563eb;
         }
     </style>
     """,
@@ -109,11 +96,11 @@ def load_file(uploaded_file):
         return pd.read_excel(uploaded_file)
 
 # --- Upload Section ---
-st.markdown("### 📁 Upload Files")
+st.markdown("### 📂 Upload Files")
 file1 = st.file_uploader("📦 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("🚚 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("🚛 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison Logic ---
+# --- Comparison ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
@@ -131,7 +118,7 @@ if file1 and file2:
         st.markdown("### 📊 Summary")
         st.success(f"✅ **Total Matches:** {len(matches)}")
         st.error(f"❌ **Only in Seamaster Report:** {len(only_in_1)}")
-        st.error(f"❌ **Only in Transporter Report:** {len(only_in_2)}")
+        st.error(f"❌ **Only in Trucker Report:** {len(only_in_2)}")
 
         with st.expander("✅ Matching Codes"):
             st.write(matches)
@@ -143,7 +130,7 @@ if file1 and file2:
             st.write(only_in_1 if only_in_1 else "✅ No differences")
 
         with col2:
-            st.subheader("❌ In Transporter Report Only")
+            st.subheader("❌ In Trucker Report Only")
             st.write(only_in_2 if only_in_2 else "✅ No differences")
 
     except Exception as e:
