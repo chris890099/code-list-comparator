@@ -12,6 +12,7 @@ st.set_page_config(
 # --- Custom CSS Styling ---
 st.markdown(
     """
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
@@ -21,31 +22,25 @@ st.markdown(
 
         .stApp {
             background-color: #0f172a;
-            color: #ffffff;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+            padding: 2rem;
         }
 
         .block-container {
             padding: 2rem 3rem;
             border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
             background-color: #1e293b;
         }
 
-        h1, h2, h3, h4, .stMarkdown h1 {
-            color: #ffffff;
-        }
-        /* Fix label text color */
-            section[data-testid="stFileUploader"] > label {
-            color: white !important;
-            font-weight: 600;
+        h1, h2, h3, h4 {
+            color: #f8fafc;
         }
 
         .stFileUploader {
             border: 2px dashed #60a5fa;
             border-radius: 12px;
             padding: 1rem;
-            background-color: transparent;
+            background-color: #1e293b;
         }
 
         .stFileUploader > div > div {
@@ -53,16 +48,20 @@ st.markdown(
             color: white !important;
             border: 1px solid #60a5fa !important;
             border-radius: 12px !important;
-            box-shadow: none !important;
+        }
+
+        section[data-testid="stFileUploader"] > label {
+            color: white !important;
+            font-weight: 600;
         }
 
         input[type="file"] {
-            color: black !important;
+            color: white !important;
             background-color: #1e293b !important;
         }
 
         .stButton>button {
-            background-color: #3b82f6;
+            background-color: #2563eb;
             color: white;
             font-weight: bold;
             border-radius: 10px;
@@ -70,11 +69,13 @@ st.markdown(
         }
 
         .stButton>button:hover {
-            background-color: #2563eb;
+            background-color: #1d4ed8;
         }
     </style>
     """,
     unsafe_allow_html=True
+
+
 )
 
 # --- App Title ---
