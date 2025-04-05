@@ -84,8 +84,8 @@ def load_file(uploaded_file):
 
 # --- Upload Section ---
 st.markdown("### 📂 Upload Files")
-file1 = st.file_uploader("Upload Code List 1", type=["csv", "xls", "xlsx", "txt", "pdf"])
-file2 = st.file_uploader("Upload Code List 2", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file1 = st.file_uploader("Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
+file2 = st.file_uploader("Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
 # --- Comparison ---
 if file1 and file2:
