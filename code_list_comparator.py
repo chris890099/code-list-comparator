@@ -2,76 +2,73 @@ import streamlit as st
 import pandas as pd
 import fitz  # PyMuPDF
 
-# --- Page Setup ---
+# --- Page Config ---
 st.set_page_config(
     page_title="Code List Comparator | Seamaster",
     page_icon="🌊",
     layout="wide"
 )
 
-# --- Consistent Dark Mode UI Styling ---
-st.markdown("""
+# --- Dark Theme Styling ---
+st.markdown(
+    """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-        background-color: #0b1d2c !important;
-        color: white !important;
-    }
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
 
-    .stApp {
-        background-color: #0b1d2c;
-        color: white;
-    }
+        .stApp {
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            padding: 2rem;
+        }
 
-    h1, h2, h3, h4, h5, h6, p, label, span {
-        color: white !important;
-    }
+        .block-container {
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            background-color: #1b2735;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
 
-    .block-container {
-        padding: 2rem 3rem;
-        background-color: #122a3f;
-        border-radius: 15px;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.5);
-    }
+        h1, h2, h3, h4 {
+            color: #ffffff;
+        }
 
-    .stFileUploader {
-        background-color: #1d3557 !important;
-        border: 2px dashed #4fc3f7;
-        border-radius: 12px;
-        padding: 1rem;
-        color: white !important;
-    }
+        .stFileUploader {
+            background-color: #111827 !important;
+            color: white !important;
+            border: 1px solid #60a5fa;
+            border-radius: 10px;
+            padding: 1rem;
+        }
 
-    .stButton>button {
-        background-color: #2196f3 !important;
-        color: white;
-        font-weight: bold;
-        border-radius: 8px;
-        padding: 0.6rem 1.4rem;
-    }
+        .stFileUploader label {
+            color: #ffffff !important;
+        }
 
-    .stButton>button:hover {
-        background-color: #1976d2 !important;
-    }
+        .stButton>button {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+        }
 
-    .st-expander {
-        background-color: #1a2635 !important;
-        color: white !important;
-    }
-
-    footer, header, #MainMenu {
-        display: none;
-    }
+        .stButton>button:hover {
+            background-color: #2563eb;
+        }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# --- App Title ---
+# --- Title ---
 st.title("🔍 Seamaster Code List Comparator")
 st.write("Upload two files (CSV, XLS, XLSX, TXT, PDF) to compare and find matching and non-matching codes.")
 
-# --- File Parsing ---
+# --- PDF Extraction ---
 def extract_text_from_pdf(uploaded_file):
     text = ""
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -79,6 +76,7 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
     return pd.DataFrame([[line.strip()] for line in text.splitlines() if line.strip()], columns=["Code"])
 
+# --- Load Any File ---
 def load_file(uploaded_file):
     if uploaded_file.name.endswith(".pdf"):
         return extract_text_from_pdf(uploaded_file)
@@ -90,11 +88,11 @@ def load_file(uploaded_file):
         return pd.read_excel(uploaded_file)
 
 # --- Upload Section ---
-st.markdown("### 📂 Upload Files")
+st.markdown("### 📁 Upload Files")
 file1 = st.file_uploader("🗂️ Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 file2 = st.file_uploader("🚚 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf"])
 
-# --- Comparison ---
+# --- Comparison Logic ---
 if file1 and file2:
     try:
         df1 = load_file(file1)
