@@ -166,6 +166,57 @@ st.markdown(
             color: #67e8f9 !important;
             text-decoration: underline !important;
         }
+
+        /* Added CSS for Cross-Browser Consistency */
+        /* Ensure file uploader text colors are consistent across browsers */
+        .stFileUploader * {
+            color: #6b7280 !important; /* Consistent gray for drag-and-drop text */
+        }
+
+        .stFileUploader > label {
+            color: #000000 !important; /* Ensure label stays black */
+        }
+
+        div[data-testid="stFileUploader"] button {
+            color: white !important; /* Ensure Browse button text is white */
+        }
+
+        /* Ensure background and border consistency */
+        .stFileUploader {
+            background: #ffffff !important; /* Force white background */
+            border: 2px dashed #60a5fa !important;
+            -webkit-border: 2px dashed #60a5fa !important; /* For Safari/Edge */
+            -moz-border: 2px dashed #60a5fa !important; /* For Firefox */
+        }
+
+        /* Results section for scrolling */
+        #results-section {
+            scroll-margin-top: 20px; /* Ensure smooth scrolling with offset */
+        }
+
+        /* Scroll Prompt Styling */
+        .scroll-prompt {
+            background: rgba(0, 221, 235, 0.2);
+            border: 1px solid #00ddeb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            color: #e0e7ff;
+            font-weight: 500;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 221, 235, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .scroll-prompt a {
+            color: #67e8f9 !important;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .scroll-prompt a:hover {
+            color: #ffffff !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -206,6 +257,13 @@ def get_download_link(df, filename):
     b64 = base64.b64encode(csv.encode()).decode()
     return f'<a href="data:file/csv;base64,{b64}" download="{filename}">📥 Download {filename}</a>'
 
+# --- State to Track Comparison ---
+if 'comparison_done' not in st.session_state:
+    st.session_state.comparison_done = False
+
+# --- Placeholder for Scroll Prompt ---
+prompt_placeholder = st.empty()
+
 # --- Upload Section ---
 st.markdown("### 📍 Upload Files")
 col1, col2 = st.columns(2)
@@ -230,7 +288,23 @@ if file1 and file2:
                 only_in_1 = set1 - set2
                 only_in_2 = set2 - set1
 
+                # Set comparison done flag
+                st.session_state.comparison_done = True
+
+                # Update the placeholder with the scroll prompt
+                with prompt_placeholder.container():
+                    st.markdown(
+                        """
+                        <div class="scroll-prompt">
+                            🎉 Comparison complete! Please scroll down to view the results, or 
+                            <a href="#results-section">click here to jump to the results</a>.
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
                 # --- Summary ---
+                st.markdown('<div id="results-section"></div>', unsafe_allow_html=True)  # Anchor for scrolling
                 st.markdown("### 📊 Results")
                 st.markdown(
                     f'<div class="summary-box match-box"><strong>Total Matches:</strong> {len(matches)}</div>',
@@ -271,3 +345,16 @@ if file1 and file2:
                 st.error(f"🚨 Error: {str(e)}. Please check file formats and try again.")
 else:
     st.info("Please upload both files to start the comparison.")
+
+# --- Ensure Prompt Persists After Re-render ---
+if st.session_state.comparison_done:
+    with prompt_placeholder.container():
+        st.markdown(
+            """
+            <div class="scroll-prompt">
+                🎉 Comparison complete! Please scroll down to view the results, or 
+                <a href="#results-section">click here to jump to the results</a>.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
