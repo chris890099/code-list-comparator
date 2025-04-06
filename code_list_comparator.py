@@ -51,7 +51,7 @@ st.markdown(
         /* File Uploader Label (Seamaster Report, Transporter Report) */
         .stFileUploader > label {
             color: #000000 !important;
-            font-weight: 600;
+            font-weight: 800;
             font-size: 1.2rem !important; /* Increased text size */
         }
 
@@ -60,7 +60,7 @@ st.markdown(
             border: 2px dashed #60a5fa !important;
             border-radius: 10px !important;
             padding: 0.75rem !important;
-            background: #ffffff !important;
+            background: #0088aa !important;
             transition: border 0.3s ease, transform 0.2s ease;
             max-width: 90% !important;
         }
@@ -73,7 +73,7 @@ st.markdown(
         /* File name and size text */
         div[data-testid="stFileUploader"] span,
         div[data-testid="stFileUploader"] strong {
-            color: #000000 !important;
+            color: #00ddeb !important;
             font-weight: 500 !important;
         }
 
@@ -129,7 +129,7 @@ st.markdown(
         }
 
         .stExpanderHeader {
-            color: #e0e7ff !important;
+            color: #0088aa !important;
             font-weight: 600 !important;
         }
 
@@ -187,7 +187,7 @@ st.markdown(
             // Target the "Drag and drop file here" and "Limit 200MB per file..." text
             const dropzoneElements = document.querySelectorAll('div[data-testid="stFileDropzone"] span');
             dropzoneElements.forEach(element => {
-                element.style.color = '#ffffff'; // Set to white
+                element.style.color = '#ff4d4f'; // Set to white
                 element.style.fontWeight = '500';
                 element.style.fontSize = '0.9rem';
                 element.style.opacity = '1';
@@ -196,7 +196,7 @@ st.markdown(
             // Target the "Browse files" button text
             const browseButtons = document.querySelectorAll('div[data-testid="stFileUploader"] button');
             browseButtons.forEach(button => {
-                button.style.color = '#ffffff'; // Set to white
+                button.style.color = '#ff4d4f'; // Set to white
                 button.style.background = '#60a5fa';
                 button.style.borderRadius = '8px';
                 button.style.padding = '0.4rem 0.8rem';
