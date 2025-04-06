@@ -73,7 +73,7 @@ st.markdown(
         /* File name and size text */
         div[data-testid="stFileUploader"] span,
         div[data-testid="stFileUploader"] strong {
-            color: #00ddeb !important;
+            color: #0088aa !important;
             font-weight: 500 !important;
         }
 
