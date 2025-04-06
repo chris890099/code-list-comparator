@@ -48,7 +48,7 @@ st.markdown(
             color: #e0e7ff !important;
         }
 
-        /* File Uploader Label (Seamaster Report, Trucker Report) */
+        /* File Uploader Label (Seamaster Report, Transporter Report) */
         .stFileUploader > label {
             color: #000000 !important;
             font-weight: 600;
@@ -57,16 +57,16 @@ st.markdown(
 
         /* File Uploader Styling */
         .stFileUploader {
-            border: 2px dashed #60a5fa;
-            border-radius: 10px;
-            padding: 0.75rem;
-            background: #ffffff;
+            border: 2px dashed #60a5fa !important;
+            border-radius: 10px !important;
+            padding: 0.75rem !important;
+            background: #ffffff !important;
             transition: border 0.3s ease, transform 0.2s ease;
-            max-width: 90%;
+            max-width: 90% !important;
         }
 
         .stFileUploader:hover {
-            border: 2px dashed #93c5fd;
+            border: 2px dashed #93c5fd !important;
             transform: scale(1.01);
         }
 
@@ -74,24 +74,7 @@ st.markdown(
         div[data-testid="stFileUploader"] span,
         div[data-testid="stFileUploader"] strong {
             color: #000000 !important;
-            font-weight: 500;
-        }
-
-        /* Drag and drop text */
-        div[data-testid="stFileDropzone"] span {
-            color: #6b7280 !important;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        /* Browse button */
-        div[data-testid="stFileUploader"] button {
-            background: #60a5fa !important;
-            color: white !important;
-            border-radius: 8px !important;
-            padding: 0.4rem 0.8rem !important;
-            font-weight: 600 !important;
-            font-size: 0.9rem;
+            font-weight: 500 !important;
         }
 
         /* Compare Button */
@@ -167,28 +150,6 @@ st.markdown(
             text-decoration: underline !important;
         }
 
-        /* Added CSS for Cross-Browser Consistency */
-        /* Ensure file uploader text colors are consistent across browsers */
-        .stFileUploader * {
-            color: #6b7280 !important; /* Consistent gray for drag-and-drop text */
-        }
-
-        .stFileUploader > label {
-            color: #000000 !important; /* Ensure label stays black */
-        }
-
-        div[data-testid="stFileUploader"] button {
-            color: white !important; /* Ensure Browse button text is white */
-        }
-
-        /* Ensure background and border consistency */
-        .stFileUploader {
-            background: #ffffff !important; /* Force white background */
-            border: 2px dashed #60a5fa !important;
-            -webkit-border: 2px dashed #60a5fa !important; /* For Safari/Edge */
-            -moz-border: 2px dashed #60a5fa !important; /* For Firefox */
-        }
-
         /* Results section for scrolling */
         #results-section {
             scroll-margin-top: 20px; /* Ensure smooth scrolling with offset */
@@ -218,6 +179,52 @@ st.markdown(
             color: #ffffff !important;
         }
     </style>
+
+    <!-- JavaScript to dynamically apply styles to file uploader elements -->
+    <script>
+        // Function to apply styles to file uploader elements
+        function applyFileUploaderStyles() {
+            // Target the "Drag and drop file here" and "Limit 200MB per file..." text
+            const dropzoneElements = document.querySelectorAll('div[data-testid="stFileDropzone"] span');
+            dropzoneElements.forEach(element => {
+                element.style.color = '#ffffff'; // Set to white
+                element.style.fontWeight = '500';
+                element.style.fontSize = '0.9rem';
+                element.style.opacity = '1';
+            });
+
+            // Target the "Browse files" button text
+            const browseButtons = document.querySelectorAll('div[data-testid="stFileUploader"] button');
+            browseButtons.forEach(button => {
+                button.style.color = '#ffffff'; // Set to white
+                button.style.background = '#60a5fa';
+                button.style.borderRadius = '8px';
+                button.style.padding = '0.4rem 0.8rem';
+                button.style.fontWeight = '600';
+                button.style.fontSize = '0.9rem';
+                button.style.border = 'none';
+                button.style.opacity = '1';
+            });
+        }
+
+        // Use MutationObserver to detect when the file uploader elements are added to the DOM
+        const observer = new MutationObserver((mutations, obs) => {
+            const dropzone = document.querySelector('div[data-testid="stFileDropzone"]');
+            if (dropzone) {
+                applyFileUploaderStyles();
+                obs.disconnect(); // Stop observing once the styles are applied
+            }
+        });
+
+        // Start observing the document body for changes
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        // Also try applying styles immediately in case the elements are already loaded
+        document.addEventListener('DOMContentLoaded', applyFileUploaderStyles);
+    </script>
     """,
     unsafe_allow_html=True
 )
@@ -270,7 +277,7 @@ col1, col2 = st.columns(2)
 with col1:
     file1 = st.file_uploader("📁 Upload Seamaster Report", type=["csv", "xls", "xlsx", "txt", "pdf", "png", "jpg", "jpeg"])
 with col2:
-    file2 = st.file_uploader("🚚 Upload Trucker Report", type=["csv", "xls", "xlsx", "txt", "pdf", "png", "jpg", "jpeg"])
+    file2 = st.file_uploader("🚚 Upload Transporter Report", type=["csv", "xls", "xlsx", "txt", "pdf", "png", "jpg", "jpeg"])
 
 # --- Comparison Logic ---
 if file1 and file2:
@@ -315,12 +322,12 @@ if file1 and file2:
                     unsafe_allow_html=True
                 )
                 st.markdown(
-                    f'<div class="summary-box diff-box"><strong>Only in Trucker:</strong> {len(only_in_2)}</div>',
+                    f'<div class="summary-box diff-box"><strong>Only in Transporter:</strong> {len(only_in_2)}</div>',
                     unsafe_allow_html=True
                 )
 
                 # --- Detailed Results ---
-                with st.expander("✅ Matching Codes", expanded=True):
+                with st.expander("✅ Matching Codes", expanded=False):
                     st.write(matches)
                     if matches:
                         df_matches = pd.DataFrame(matches, columns=["Matching Codes"])
@@ -328,18 +335,18 @@ if file1 and file2:
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.subheader("❌ Seamaster Only")
+                    st.subheader("❌ Seamaster Report Only")
                     st.write(sorted(only_in_1) if only_in_1 else "✅ No differences")
                     if only_in_1:
-                        df_only1 = pd.DataFrame(sorted(only_in_1), columns=["Seamaster Only"])
+                        df_only1 = pd.DataFrame(sorted(only_in_1), columns=["Seamaster Report Only"])
                         st.markdown(get_download_link(df_only1, "seamaster_only.csv"), unsafe_allow_html=True)
 
                 with col2:
-                    st.subheader("❌ Trucker Only")
+                    st.subheader("❌ Transporter Report Only")
                     st.write(sorted(only_in_2) if only_in_2 else "✅ No differences")
                     if only_in_2:
-                        df_only2 = pd.DataFrame(sorted(only_in_2), columns=["Trucker Only"])
-                        st.markdown(get_download_link(df_only2, "trucker_only.csv"), unsafe_allow_html=True)
+                        df_only2 = pd.DataFrame(sorted(only_in_2), columns=["Transporter Report Only"])
+                        st.markdown(get_download_link(df_only2, "transporter_only.csv"), unsafe_allow_html=True)
 
             except Exception as e:
                 st.error(f"🚨 Error: {str(e)}. Please check file formats and try again.")
@@ -358,3 +365,14 @@ if st.session_state.comparison_done:
             """,
             unsafe_allow_html=True
         )
+        # --- HIDE STREAMLIT DEFAULTS ---
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .viewerBadge_link__qRIco {display: none;} /* Hides the deploy button badge */
+    .css-18ni7ap.e8zbici2 {display: none;} /* Hides the top space with deploy icon */
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
